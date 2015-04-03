@@ -31,15 +31,19 @@ public class SliderWheelMenu extends View {
     private Rect mRectMaskBg = new Rect();
     private Rect mRectMask = new Rect();
 
+    /**
+     * 中心点的坐标
+     */
     private int mCenterXY;
 
     private boolean hasInit = false;
-
+    private int mPosition = 0;
     private float mStartAngle = 0;
     private float mTouchAngle = 0;
 
-    private int mPosition = 0;
-
+    /**
+     * 每个菜单对应的角度
+     */
     private  static float sPerAngle = 360/4.0f;
 
     private OnMenuSelected mSelectListener;
@@ -124,6 +128,7 @@ public class SliderWheelMenu extends View {
                     mCenterXY - mBitmapMask.getHeight() / 2,
                     mCenterXY + mBitmapMask.getWidth() / 2,
                     mCenterXY + mBitmapMask.getHeight() / 2);
+            hasInit = true;
         }
     }
 
@@ -134,7 +139,7 @@ public class SliderWheelMenu extends View {
         canvas.drawBitmap(mBitmapBackground, null, mRectBackground, null);
         canvas.drawBitmap(mBitmapSelectColor, null, mRectSelectColor, null);
         canvas.drawBitmap(mBitmapMaskBg, null, mRectMaskBg, null);
-        canvas.rotate(mStartAngle + mTouchAngle, mCenterXY, mCenterXY);
+        canvas.rotate( mTouchAngle, mCenterXY, mCenterXY);
         canvas.drawBitmap(mBitmapIndicator, null, mRectIndicator, null);
         canvas.restore();
         canvas.drawBitmap(mBitmapMask, null, mRectMask, null);
@@ -157,8 +162,8 @@ public class SliderWheelMenu extends View {
             case MotionEvent.ACTION_MOVE:
                  float startAngle = getAngle(mLastX,mLastY);
                  float endAngle = getAngle(x,y);
-                int quadrant = getQuadrant(x,y);
 
+                int quadrant = getQuadrant(x,y);
                 switch (quadrant){
                     case 1:
                     case 4:
@@ -169,11 +174,10 @@ public class SliderWheelMenu extends View {
                         mTouchAngle += startAngle-endAngle;
                         break;
                 }
-                Log.e("TAG-angle",""+mTouchAngle);
                 //对角度范围进行处理
                 mTouchAngle = mTouchAngle%360;
+
                 int pos = getPositionWhenRotate(mTouchAngle);
-                Log.e("TAG-position1", "" + pos);
                 mBitmapSelectColor = getBitmapByPosition(pos);
                 mLastX = x;
                 mLastY = y;
@@ -181,7 +185,7 @@ public class SliderWheelMenu extends View {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 int position = getPositionWhenRotate(mTouchAngle);
-//                mTouchAngle = position*sPerAngle;
+
                 int index = (int) (mTouchAngle/45.0f);
                 if (index % 2== 0 ){
                     mTouchAngle = index*45;
@@ -192,9 +196,9 @@ public class SliderWheelMenu extends View {
                         mTouchAngle = (index - 1) * 45;
                     }
                 }
-                Log.e("TAG-position2", "" + position+"==="+mTouchAngle);
                 if (mSelectListener != null){
                     mSelectListener.menuSelect(position);
+                    mPosition =position;
                 }
                 break;
         }
@@ -202,6 +206,9 @@ public class SliderWheelMenu extends View {
         return true;
     }
 
+    /**
+     * 根据当期的位置给出选中菜单的背景
+     */
     private Bitmap getBitmapByPosition(int pos) {
         if (pos<0){
             pos = 4+pos;
@@ -267,22 +274,27 @@ public class SliderWheelMenu extends View {
         return (float) (Math.asin(deltaY/distance)*180/Math.PI);
     }
 
+    /**
+     * 外部可以指定需要的菜单
+     */
     public void setPosition(int position){
-        mStartAngle = position*sPerAngle;
-        mPosition = position;
+        mBitmapSelectColor = getBitmapByPosition(position);
+        if (position>=mPosition){
+            mTouchAngle = -position*sPerAngle;
+        }else{
+            mTouchAngle = position*sPerAngle;
+        }
         invalidate();
     }
 
-    private int getPositionByAngle(){
-        int position = (int) ((mTouchAngle+mStartAngle)/sPerAngle);
-        return position;
+    /**
+     * 菜单按钮滑动的事件
+     */
+    public interface OnMenuSelected {
+        void menuSelect(int position);
     }
 
     public void setOnMenuSelected(OnMenuSelected listener) {
         this.mSelectListener = listener;
-    }
-
-    public interface OnMenuSelected {
-        void menuSelect(int position);
     }
 }

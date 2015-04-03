@@ -6,6 +6,8 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.view.MotionEvent;
+import android.view.View;
 
 
 public class MainActivity extends FragmentActivity {
@@ -20,20 +22,12 @@ public class MainActivity extends FragmentActivity {
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
         MenuAdapter adapter = new MenuAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(adapter);
-        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        mViewPager.setOnPageChangeListener(changeListener);
+        mViewPager.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onPageScrolled(int i, float v, int i2) {
-//                mSliderMenu.setPosition(i);
-            }
-
-            @Override
-            public void onPageSelected(int i) {
-
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int i) {
-
+            public boolean onTouch(View v, MotionEvent event) {
+                mViewPager.setOnPageChangeListener(changeListener);
+                return false;
             }
         });
 
@@ -44,8 +38,31 @@ public class MainActivity extends FragmentActivity {
                 mViewPager.setCurrentItem(position,true);
             }
         });
+        mSliderMenu.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                         mViewPager.setOnPageChangeListener(null);
+                return false;
+            }
+        });
 
     }
+
+    private ViewPager.OnPageChangeListener changeListener =new ViewPager.OnPageChangeListener() {
+        @Override
+        public void onPageScrolled(int i, float v, int i2) {
+        }
+
+        @Override
+        public void onPageSelected(int i) {
+            mSliderMenu.setPosition(i);
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int i) {
+
+        }
+    };
 
 
     private class MenuAdapter extends FragmentPagerAdapter{
@@ -56,7 +73,7 @@ public class MainActivity extends FragmentActivity {
 
         @Override
         public Fragment getItem(int i) {
-            return MenuFragment.newInstance("这是Fragment："+i+"");
+            return MenuFragment.newInstance("这是Fragment："+(i+1)+"");
         }
 
         @Override
