@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -34,6 +35,8 @@ public class SliderWheelMenu extends View {
     private float mTouchAngle = 0;
 
     private int mPosition = 0;
+
+    private  static float sPerAngle = 360/4.0f;
 
     private OnMenuSelected mSelectListener;
 
@@ -86,17 +89,30 @@ public class SliderWheelMenu extends View {
         setMeasuredDimension(layoutSize, layoutSize);
 
         if (!hasInit) {
-            mRectBackground.set(mCenterXY - mBitmapBackground.getWidth() / 2, mCenterXY - mBitmapBackground.getHeight() / 2,
-                    mCenterXY + mBitmapBackground.getWidth() / 2, mCenterXY + mBitmapBackground.getHeight() / 2);
+            mRectBackground.set(mCenterXY - mBitmapBackground.getWidth() / 2,
+                    mCenterXY - mBitmapBackground.getHeight() / 2,
+                    mCenterXY + mBitmapBackground.getWidth() / 2,
+                    mCenterXY + mBitmapBackground.getHeight() / 2);
 
-            mRectIndicator.set(mCenterXY - mBitmapIndicator.getWidth() / 2, mCenterXY - mBitmapIndicator.getHeight() / 2,
-                    mCenterXY + mBitmapIndicator.getWidth() / 2, mCenterXY + mBitmapIndicator.getHeight() / 2);
+            mRectSelectColor.set(mCenterXY - mBitmapSelectColor.getWidth() / 2,
+                    mCenterXY - mBitmapSelectColor.getHeight() / 2,
+                    mCenterXY + mBitmapSelectColor.getWidth() / 2,
+                    mCenterXY + mBitmapSelectColor.getHeight() / 2);
 
-            mRectMaskBg.set(mCenterXY - mBitmapMaskBg.getWidth() / 2, mCenterXY - mBitmapMaskBg.getHeight() / 2,
-                    mCenterXY + mBitmapMaskBg.getWidth() / 2, mCenterXY + mBitmapMaskBg.getHeight() / 2);
+            mRectIndicator.set(mCenterXY - mBitmapIndicator.getWidth() / 2,
+                    mCenterXY - mBitmapIndicator.getHeight() / 2,
+                    mCenterXY + mBitmapIndicator.getWidth() / 2,
+                    mCenterXY + mBitmapIndicator.getHeight() / 2);
 
-            mRectMask.set(mCenterXY - mBitmapMask.getWidth() / 2, mCenterXY - mBitmapMask.getHeight() / 2,
-                    mCenterXY + mBitmapMask.getWidth() / 2, mCenterXY + mBitmapMask.getHeight() / 2);
+            mRectMaskBg.set(mCenterXY - mBitmapMaskBg.getWidth() / 2,
+                    mCenterXY - mBitmapMaskBg.getHeight() / 2,
+                    mCenterXY + mBitmapMaskBg.getWidth() / 2,
+                    mCenterXY + mBitmapMaskBg.getHeight() / 2);
+
+            mRectMask.set(mCenterXY - mBitmapMask.getWidth() / 2,
+                    mCenterXY - mBitmapMask.getHeight() / 2,
+                    mCenterXY + mBitmapMask.getWidth() / 2,
+                    mCenterXY + mBitmapMask.getHeight() / 2);
         }
     }
 
@@ -105,6 +121,7 @@ public class SliderWheelMenu extends View {
 //        super.onDraw(canvas);
         canvas.save();
         canvas.drawBitmap(mBitmapBackground, null, mRectBackground, null);
+        canvas.drawBitmap(mBitmapSelectColor, null, mRectSelectColor, null);
         canvas.drawBitmap(mBitmapMaskBg, null, mRectMaskBg, null);
         canvas.rotate(mStartAngle + mTouchAngle, mCenterXY, mCenterXY);
         canvas.drawBitmap(mBitmapIndicator, null, mRectIndicator, null);
@@ -141,16 +158,41 @@ public class SliderWheelMenu extends View {
                         mTouchAngle += startAngle-endAngle;
                         break;
                 }
+                Log.e("TAG-angle",""+mTouchAngle);
+                //对角度范围进行处理
+                mTouchAngle = mTouchAngle%360;
+//                int index = getPistionWhenRotate();
+//                mBitmapSelectColor = BitmapFactory.decodeResource(getResources(),getResourceByPosition(index));
                 mLastX = x;
                 mLastY = y;
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                int position = getPistionWhenRotate();
+                mTouchAngle = position*sPerAngle;
+                Log.e("TAG-position", "" + position);
 
                 break;
         }
         invalidate();
         return true;
+    }
+
+    private int getPistionWhenRotate() {
+        int position = getPositionByAngle();
+        if (mTouchAngle > 0){
+            float angle = mTouchAngle%sPerAngle;
+            if (angle>=45){
+                position++;
+            }
+            mTouchAngle = position*sPerAngle;
+        }else{
+            float angle = mTouchAngle%sPerAngle;
+            if (angle<=-45){
+                position--;
+            }
+        }
+        return position;
     }
 
 
@@ -193,6 +235,11 @@ public class SliderWheelMenu extends View {
             default:
                 return R.drawable.roulette_switch_color_heart;
         }
+    }
+
+    private int getPositionByAngle(){
+        int position = (int) ((mTouchAngle+mStartAngle)/sPerAngle);
+        return position;
     }
 
     public void setOnMenuSelected(OnMenuSelected listener) {
