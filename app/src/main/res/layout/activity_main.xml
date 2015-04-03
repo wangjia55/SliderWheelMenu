@@ -2,18 +2,53 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#ff979797"
     tools:context=".MainActivity">
+
+    <RelativeLayout
+        android:id="@+id/relative_header"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
+        android:background="#ffffff">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:text="旋转菜单控件DEMO"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"/>
+        </RelativeLayout>
+
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/relative_header"
         android:layout_above="@+id/sliderMenu"/>
 
     <com.jacob.slider.wheel.SliderWheelMenu
         android:id="@+id/sliderMenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="-30dp"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:background="#ffffff"/>
+
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="22dp"
+        android:src="@drawable/ic_pause"/>
+
 </RelativeLayout>

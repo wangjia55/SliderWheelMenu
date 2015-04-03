@@ -11,6 +11,7 @@ import android.support.v4.view.ViewPager;
 public class MainActivity extends FragmentActivity {
 
     private ViewPager mViewPager;
+    private SliderWheelMenu mSliderMenu;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,7 +23,7 @@ public class MainActivity extends FragmentActivity {
         mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int i, float v, int i2) {
-
+//                mSliderMenu.setPosition(i);
             }
 
             @Override
@@ -36,6 +37,13 @@ public class MainActivity extends FragmentActivity {
             }
         });
 
+        mSliderMenu = (SliderWheelMenu) findViewById(R.id.sliderMenu);
+        mSliderMenu.setOnMenuSelected(new SliderWheelMenu.OnMenuSelected() {
+            @Override
+            public void menuSelect(int position) {
+                mViewPager.setCurrentItem(position,true);
+            }
+        });
 
     }
 
@@ -48,7 +56,7 @@ public class MainActivity extends FragmentActivity {
 
         @Override
         public Fragment getItem(int i) {
-            return MenuFragment.newInstance(i+"");
+            return MenuFragment.newInstance("这是Fragment："+i+"");
         }
 
         @Override

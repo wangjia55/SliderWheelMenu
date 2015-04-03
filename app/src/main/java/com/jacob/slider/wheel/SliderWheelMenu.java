@@ -20,6 +20,10 @@ public class SliderWheelMenu extends View {
     private Bitmap mBitmapSelectColor;
     private Bitmap mBitmapMaskBg;
     private Bitmap mBitmapMask;
+    private Bitmap mBitmapMenuHeart;
+    private Bitmap mBitmapMenuMusic;
+    private Bitmap mBitmapMenuDisc;
+    private Bitmap mBitmapMenuUser;
 
     private Rect mRectBackground = new Rect();
     private Rect mRectSelectColor= new Rect();
@@ -56,9 +60,16 @@ public class SliderWheelMenu extends View {
     private void initView() {
         mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.roulette_switch_bg);
         mBitmapIndicator = BitmapFactory.decodeResource(getResources(), R.drawable.roulette_indicator);
-        mBitmapSelectColor= BitmapFactory.decodeResource(getResources(), getResourceByPosition(mPosition));
+
         mBitmapMaskBg = BitmapFactory.decodeResource(getResources(), R.drawable.roulette_switch_mask_bg);
         mBitmapMask = BitmapFactory.decodeResource(getResources(), R.drawable.roulette_switch_mask);
+
+        mBitmapMenuHeart = BitmapFactory.decodeResource(getResources(), R.drawable.roulette_switch_color_heart);
+        mBitmapMenuMusic = BitmapFactory.decodeResource(getResources(), R.drawable.roulette_switch_color_music);
+        mBitmapMenuDisc= BitmapFactory.decodeResource(getResources(), R.drawable.roulette_switch_color_disc);
+        mBitmapMenuUser = BitmapFactory.decodeResource(getResources(), R.drawable.roulette_switch_color_user);
+        mBitmapSelectColor= mBitmapMenuHeart;
+
     }
 
     @Override
@@ -161,38 +172,75 @@ public class SliderWheelMenu extends View {
                 Log.e("TAG-angle",""+mTouchAngle);
                 //对角度范围进行处理
                 mTouchAngle = mTouchAngle%360;
-//                int index = getPistionWhenRotate();
-//                mBitmapSelectColor = BitmapFactory.decodeResource(getResources(),getResourceByPosition(index));
+                int pos = getPositionWhenRotate(mTouchAngle);
+                Log.e("TAG-position1", "" + pos);
+                mBitmapSelectColor = getBitmapByPosition(pos);
                 mLastX = x;
                 mLastY = y;
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                int position = getPistionWhenRotate();
-                mTouchAngle = position*sPerAngle;
-                Log.e("TAG-position", "" + position);
-
+                int position = getPositionWhenRotate(mTouchAngle);
+//                mTouchAngle = position*sPerAngle;
+                int index = (int) (mTouchAngle/45.0f);
+                if (index % 2== 0 ){
+                    mTouchAngle = index*45;
+                }else{
+                    if (index>=0){
+                        mTouchAngle = (index+1)*45;
+                    }else{
+                        mTouchAngle = (index - 1) * 45;
+                    }
+                }
+                Log.e("TAG-position2", "" + position+"==="+mTouchAngle);
+                if (mSelectListener != null){
+                    mSelectListener.menuSelect(position);
+                }
                 break;
         }
         invalidate();
         return true;
     }
 
-    private int getPistionWhenRotate() {
-        int position = getPositionByAngle();
-        if (mTouchAngle > 0){
-            float angle = mTouchAngle%sPerAngle;
-            if (angle>=45){
-                position++;
-            }
-            mTouchAngle = position*sPerAngle;
+    private Bitmap getBitmapByPosition(int pos) {
+        if (pos<0){
+            pos = 4+pos;
+        }
+        switch (pos){
+            case 0:
+                return  mBitmapMenuHeart;
+            case 1:
+                return  mBitmapMenuMusic;
+            case 2:
+                return  mBitmapMenuDisc;
+            case 3:
+                return  mBitmapMenuUser;
+        }
+        return mBitmapMenuHeart;
+    }
+
+    /**
+     * 当在旋转的过程中获得当前的位置
+     * 如果顺时针旋转角度超过45度就直接进入下一个菜单
+     * 反之，还是回到原来的菜单位置
+     */
+    private int getPositionWhenRotate(float touchAngle) {
+        int index = (int) (touchAngle/45.0f);
+        if (index % 2== 0 ){
+            touchAngle = index*45;
         }else{
-            float angle = mTouchAngle%sPerAngle;
-            if (angle<=-45){
-                position--;
+            if (index>=0){
+                touchAngle = (index+1)*45;
+            }else{
+                touchAngle = (index - 1) * 45;
             }
         }
-        return position;
+        int position = (int) (touchAngle/sPerAngle);
+        if (position<=0){
+            return  Math.abs(position);
+        }else{
+            return 4-position;
+        }
     }
 
 
@@ -219,22 +267,10 @@ public class SliderWheelMenu extends View {
         return (float) (Math.asin(deltaY/distance)*180/Math.PI);
     }
 
-    /**
-     * 根据当前的指示的index给出对应的资源文件id
-     */
-    private int getResourceByPosition(int position){
-        switch (position){
-            case 0:
-                return R.drawable.roulette_switch_color_heart;
-            case 1:
-                return R.drawable.roulette_switch_color_music;
-            case 2:
-                return R.drawable.roulette_switch_color_disc;
-            case 3:
-                return R.drawable.roulette_switch_color_user;
-            default:
-                return R.drawable.roulette_switch_color_heart;
-        }
+    public void setPosition(int position){
+        mStartAngle = position*sPerAngle;
+        mPosition = position;
+        invalidate();
     }
 
     private int getPositionByAngle(){
